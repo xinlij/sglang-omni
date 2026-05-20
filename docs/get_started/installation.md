@@ -1,15 +1,17 @@
 # 🚀 Get Started
 
-## 📦 Installation
+Choose one of the following methods to set up your environment. We highly recommend using Docker for development or production environment.
 
-We highly recommend to use our [Docker Image](#🐳-use-docker) for development or production environment. Otherwise, please make sure you have built and installed [`ucx`](https://github.com/openucx/ucx) in your environment.
+## 📦 Option 1: Installation
+
+Please make sure you have built and installed [`ucx`](https://github.com/openucx/ucx) in your environment.
 
 ```bash
 # clone this repository
 git clone git@github.com:sgl-project/sglang-omni.git
 cd sglang-omni
 
-# create a virtual environment in docker
+# create a virtual environment
 uv venv .venv -p 3.12
 source .venv/bin/activate
 
@@ -20,8 +22,7 @@ uv pip install -v .
 uv pip install -v -e .
 ```
 
-
-## 🐳 Use Docker
+## 🐳 Option 2: Use Docker
 
 We have build all necessary dependencies into our Docker Image, so you can simply pull and run it.
 
