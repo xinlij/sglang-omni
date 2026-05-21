@@ -21,6 +21,13 @@ Our core features include:
 
 .. toctree::
    :maxdepth: 1
+   :caption: Cookbook
+
+   cookbook/qwen3_omni.md
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: Basic Usage
 
    basic_usage/qwen3_omni.md
