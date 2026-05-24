@@ -91,7 +91,9 @@ class ConfigManager:
                 # if k is an digit, treat it as an index
                 if k.isdigit():
                     k = int(k)
-                current = current[k]
+                    current = current[k]
+                else:
+                    current = current.setdefault(k, {})
 
             # update the value
             current[keys[-1]] = value
