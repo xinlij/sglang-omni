@@ -18,7 +18,6 @@ _EXAMPLES_DIR = pathlib.Path(__file__).resolve().parents[3] / "examples"
     "script",
     [
         "run_qwen3_omni_server.py",
-        "run_qwen3_omni_text_first.py",
         "run_qwen3_omni_speech.py",
     ],
 )
