@@ -214,6 +214,10 @@ def _job_sort_key(job: dict) -> tuple[str, int]:
     return (str(job.get("started_at") or job.get("created_at") or ""), int(job_id))
 
 
+def _stage_gate_sort_key(job: dict) -> tuple[int, str, int]:
+    return (int(job.get("run_priority", 1)), *_job_sort_key(job))
+
+
 def _active_matching_jobs(
     client: GitHubClient,
     *,
@@ -248,7 +252,11 @@ def _blocking_completed_jobs(
     return matches
 
 
-def _high_priority_stage_gate_blockers(
+def _run_priority_from_labels(labels: set[str], *, high_priority_label: str) -> int:
+    return 0 if high_priority_label in labels else 1
+
+
+def _stage_gate_blockers(
     client: GitHubClient,
     *,
     current_run_id: int,
@@ -274,15 +282,20 @@ def _high_priority_stage_gate_blockers(
             if run.get("event") != "pull_request":
                 continue
 
-            is_high_priority_run = False
+            is_ci_run = False
+            run_priority = 1
             pr_number = None
             for pr in run.get("pull_requests") or []:
                 pr_number = int(pr["number"])
                 labels = _labels_for_pr(client, label_cache, pr_number)
-                if run_label in labels and high_priority_label in labels:
-                    is_high_priority_run = True
+                if run_label in labels:
+                    is_ci_run = True
+                    run_priority = _run_priority_from_labels(
+                        labels,
+                        high_priority_label=high_priority_label,
+                    )
                     break
-            if not is_high_priority_run:
+            if not is_ci_run:
                 continue
 
             jobs = list(client.paginate(f"/actions/runs/{run_id}/jobs"))
@@ -306,6 +319,7 @@ def _high_priority_stage_gate_blockers(
                             "job": job_name,
                             "job_status": job.get("status"),
                             "job_conclusion": job.get("conclusion"),
+                            "run_priority": run_priority,
                         }
                     )
                 elif job.get("status") == "completed":
@@ -330,6 +344,7 @@ def _high_priority_stage_gate_blockers(
                             "job_id": int(job["id"]),
                             "started_at": job.get("started_at"),
                             "created_at": job.get("created_at"),
+                            "run_priority": run_priority,
                         }
                     )
                 elif (
@@ -349,6 +364,7 @@ def _high_priority_stage_gate_blockers(
                             "job": job_name,
                             "job_status": "waiting for stage job",
                             "job_conclusion": None,
+                            "run_priority": run_priority,
                         }
                     )
 
@@ -364,11 +380,11 @@ def _high_priority_stage_gate_blockers(
         and _job_matches_priority_gate(job.get("job"), stage_name)
     ]
     if not current_gates:
-        winner = min(gate_contenders, key=_job_sort_key)
+        winner = min(gate_contenders, key=_stage_gate_sort_key)
         return [winner]
 
-    current_gate = min(current_gates, key=_job_sort_key)
-    winner = min(gate_contenders, key=_job_sort_key)
+    current_gate = min(current_gates, key=_stage_gate_sort_key)
+    winner = min(gate_contenders, key=_stage_gate_sort_key)
     if current_gate["job_id"] == winner["job_id"]:
         return []
     return [winner]
@@ -512,8 +528,8 @@ def main() -> int:
 
     while True:
         try:
-            if priority_state == "high" and stage_name:
-                active_runs = _high_priority_stage_gate_blockers(
+            if stage_name:
+                active_runs = _stage_gate_blockers(
                     client,
                     current_run_id=current_run_id,
                     priority_workflows=workflows,
@@ -544,6 +560,8 @@ def main() -> int:
                     f"High-priority{stage_message} gate acquired; "
                     "stage CI can start."
                 )
+            elif stage_name:
+                print(f"Stage gate acquired for{stage_message}; stage CI can start.")
             else:
                 print(
                     f"No active high-priority{stage_message} CI work found; "
@@ -551,8 +569,8 @@ def main() -> int:
                 )
             return 0
 
-        if priority_state == "high":
-            print("Waiting for the active high-priority stage slot:")
+        if stage_name:
+            print("Waiting for the active CI stage slot:")
         else:
             print("Waiting for active high-priority CI work:")
         for run in active_runs:
