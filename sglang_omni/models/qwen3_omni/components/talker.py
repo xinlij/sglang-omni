@@ -865,7 +865,6 @@ class Qwen3OmniTalker(nn.Module):
             device=device,
             dtype=self.model.codec_embedding.weight.dtype,
         )
-        _bind_default_weight_loaders(self)
         self._cached_params_dict = dict(self.named_parameters())
         self._sampler = None
 
@@ -1458,4 +1457,5 @@ class Qwen3OmniTalker(nn.Module):
             # 3. Direct parameter loading
             param = params_dict.get(name)
             if param is not None:
-                param.weight_loader(param, loaded_weight)
+                weight_loader = getattr(param, "weight_loader", default_weight_loader)
+                weight_loader(param, loaded_weight)

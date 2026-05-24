@@ -13,7 +13,6 @@ from torch import nn
 from sglang_omni.models.qwen3_omni.components.talker import (  # noqa: E501
     Qwen3OmniMoeTalkerDenseMLP,
     ResizeMLP,
-    _bind_default_weight_loaders,
     _repeat_kv,
 )
 from sglang_omni.models.qwen3_omni.components.thinker_model import (
@@ -297,7 +296,6 @@ class Qwen3TTSTalker(nn.Module):
         self._sub_top_p: list[float] = []
         self._sub_top_k: list[int] = []
         self._sub_generators: list[torch.Generator | None] = []
-        _bind_default_weight_loaders(self)
         self._cached_params_dict = dict(self.named_parameters())
         self._sampler = None
 
