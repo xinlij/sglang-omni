@@ -21,7 +21,6 @@ uv pip install -v .
 # Higgs TTS model is private; export your HF token before downloading.
 export HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 hf download boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999
-hf download bosonai/higgs-audio-v2-tokenizer
 ```
 
 ## Server Configuration
@@ -36,7 +35,8 @@ sgl-omni serve \
   --port 8000
 ```
 
-To use a separate codec checkpoint:
+To use a separate codec checkpoint (download it first with
+`hf download bosonai/higgs-audio-v2-tokenizer`):
 
 ```bash
 sgl-omni serve \
