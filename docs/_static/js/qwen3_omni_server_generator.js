@@ -82,9 +82,6 @@
       subtitle: '',
       contribute: function(ctx) {
         var extra = ['runtime_overrides.thinker.server_args_overrides.quantization=fp8'];
-        if (ctx.mode === 'speech') {
-          extra.push('runtime_overrides.talker_ar.server_args_overrides.quantization=fp8');
-        }
         return { extraArgs: extra };
       },
     },
@@ -107,10 +104,11 @@
       }
     }
     if (ctx.prec === 'fp8') {
-      items.push({ flag: 'runtime_overrides.thinker…quantization=fp8', desc: 'FP8 precision for the thinker stage' });
+      var fp8Desc = 'FP8 precision for the thinker stage';
       if (ctx.mode === 'speech') {
-        items.push({ flag: 'runtime_overrides.talker_ar…quantization=fp8', desc: 'FP8 precision for the talker stage' });
+        fp8Desc += '; talker remains in BF16';
       }
+      items.push({ flag: 'runtime_overrides.thinker…quantization=fp8', desc: fp8Desc });
     }
     if (items.length === 0) {
       items.push({ flag: '(no extra flags)', desc: 'Disaggregated speech pipeline with thinker on GPU 0 and talker on GPU 1 by default' });
