@@ -24,6 +24,7 @@ Our core features include:
    :caption: Cookbook
 
    cookbook/qwen3_omni.md
+   cookbook/higgs_tts.md
 
 
 .. toctree::
