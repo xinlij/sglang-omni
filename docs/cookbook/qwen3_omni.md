@@ -33,8 +33,8 @@ Use the selector below to generate the exact launch command for your configurati
 - ⚠️ = code path exists, not yet in CI
 - ❌ = explicitly rejected by the CLI/runtime
 
-Colocated topology requires `--config examples/configs/qwen3_omni_colocated.yaml`
-to set per-stage GPU memory budgets.
+Colocated topology requires `--config examples/configs/qwen3_omni_colocated_h20.yaml`
+(or `qwen3_omni_colocated_h200.yaml` on H200) to set per-stage GPU memory budgets.
 
 | Mode | Topology | Thinker TP | Precision | Status | Notes |
 |---|---|---|---|---|---|

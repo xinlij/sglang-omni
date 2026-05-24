@@ -44,7 +44,7 @@
       contribute: function()  {
         return {
           flags:  ['--colocate'],
-          config: 'examples/configs/qwen3_omni_colocated.yaml',
+          config: 'examples/configs/qwen3_omni_colocated_h20.yaml',
         };
       },
     },
@@ -99,7 +99,7 @@
     } else {
       if (ctx.topo === 'colocated') {
         items.push({ flag: '--colocate', desc: 'All GPU stages share a single high-VRAM GPU' });
-        items.push({ flag: '--config …colocated.yaml', desc: 'Memory budget profile calibrated for H20 / H200 (≥ 96 GB)' });
+        items.push({ flag: '--config …colocated_h20.yaml', desc: 'Memory budget profile calibrated for H20 (≥ 96 GB); use colocated_h200.yaml on H200' });
       } else if (ctx.tp === 'tp2') {
         items.push({ flag: '--thinker-tp-size 2', desc: 'Tensor-parallel the thinker across 2 GPUs' });
         items.push({ flag: '--thinker-gpus 0,1',  desc: 'Assign thinker TP ranks to GPU 0 and GPU 1' });
@@ -120,7 +120,7 @@
 
   // ─── Recommended hardware ─────────────────────────────────────────────────
   // Only colocated BF16 has an explicit hardware calibration profile in the repo
-  // (qwen3_omni_colocated.yaml: "single-H20 calibration profile").
+  // (qwen3_omni_colocated_h20.yaml: "single-H20 calibration profile").
   // All other combinations return null — GPU count badge already conveys
   // the key constraint; guessing GPU models would be misleading.
   function getHardware(ctx) {
