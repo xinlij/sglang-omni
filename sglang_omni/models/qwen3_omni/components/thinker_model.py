@@ -47,6 +47,12 @@ from sglang_omni.vendor.sglang.utils import make_layers
 logger = logging.getLogger(__name__)
 
 
+def _bind_default_weight_loaders(module: nn.Module) -> None:
+    for param in module.parameters():
+        if "weight_loader" not in param.__dict__:
+            param.weight_loader = default_weight_loader
+
+
 def compute_yarn_parameters(
     config: PretrainedConfig,
 ) -> tuple[float, float, float, float]:
@@ -631,6 +637,7 @@ class Qwen3OmniMoeThinkerTextModel(nn.Module):
 
         # For EAGLE3 support
         self.layers_to_capture = []
+        _bind_default_weight_loaders(self)
         self._cached_params_dict = dict(self.named_parameters())
 
     def forward(
@@ -722,8 +729,7 @@ class Qwen3OmniMoeThinkerTextModel(nn.Module):
             else:
                 if name in params_dict.keys():
                     param = params_dict[name]
-                    weight_loader = getattr(param, "weight_loader", default_weight_loader)
-                    weight_loader(param, loaded_weight)
+                    param.weight_loader(param, loaded_weight)
                     continue
             logger.warning(f"Parameter {name} not found in params_dict")
 
