@@ -29,24 +29,24 @@ Use the selector below to generate the exact launch command for your configurati
 
 ## Compatibility Matrix
 
-- ✅ = CI-tested on every PR
-- ⚠️ = code path exists, not yet in CI
-- ❌ = explicitly rejected by the CLI/runtime
+- ✅ = Supported
+- ⚠️ = Not fully validated
+- ❌ = Not supported
 
 Colocated topology requires `--config examples/configs/qwen3_omni_colocated_h20.yaml`
 (or `qwen3_omni_colocated_h200.yaml` on H200) to set per-stage GPU memory budgets.
 
-| Mode | Topology | Thinker TP | Precision | Status | Notes |
-|---|---|---|---|---|---|
-| Thinker-only | — | — | BF16 | ✅ | Tested in CI (MMMU, MMSU, Video-MME, Video-AMME) |
-| Thinker-only | — | — | FP8 | ⚠️ | Code path exists; not in CI |
-| Thinker-Talker | Disaggregated | TP=1 | BF16 | ✅ | Tested in CI (TTS, MMMU/MMSU/Video talker stages) |
-| Thinker-Talker | Disaggregated | TP=1 | FP8 | ⚠️ | Code path exists; not in CI |
-| Thinker-Talker | Disaggregated | TP=2 | BF16 | ⚠️ | Placement unit-tested; no end-to-end CI |
-| Thinker-Talker | Disaggregated | TP=2 | FP8 | ⚠️ | Code path exists; not in CI |
-| Thinker-Talker | Colocated | TP=1 | BF16 | ✅ | Tested in CI (colocated router stage) |
-| Thinker-Talker | Colocated | TP=1 | FP8 | ⚠️ | Code path exists; not in CI |
-| Thinker-Talker | Colocated | TP=2 | — | ❌ | Rejected by runtime — use Disaggregated for TP=2 |
+| Mode | Topology | Thinker TP | Precision | Status |
+|---|---|---|---|---|
+| Thinker-only | — | — | BF16 | ✅ |
+| Thinker-only | — | — | FP8 | ⚠️ |
+| Thinker-Talker | Disaggregated | TP=1 | BF16 | ✅ |
+| Thinker-Talker | Disaggregated | TP=1 | FP8 | ⚠️ |
+| Thinker-Talker | Disaggregated | TP=2 | BF16 | ⚠️ |
+| Thinker-Talker | Disaggregated | TP=2 | FP8 | ⚠️ |
+| Thinker-Talker | Colocated | TP=1 | BF16 | ✅ |
+| Thinker-Talker | Colocated | TP=1 | FP8 | ⚠️ |
+| Thinker-Talker | Colocated | TP=2 | — | ❌ |
 
 ## Input / Output Modalities
 
@@ -55,22 +55,22 @@ All input modality combinations work with both text-only and speech servers.
 
 | Input | Output | Speech server | Minimal request body | Notes |
 |---|---|---|---|---|
-| Text | Text | No | `"messages": [{"role": "user", "content": "..."}], "modalities": ["text"]` | — |
-| Image + text | Text | No | `"messages": [{"role": "user", "content": "..."}], "images": ["path/or/url"], "modalities": ["text"]` | — |
-| Audio | Text | No | `"messages": [{"role": "user", "content": ""}], "audios": ["path/or/url"], "modalities": ["text"]` | content must be "" when the query is spoken |
-| Image + audio | Text | No | `"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text"]` | content must be "" when the query is spoken |
-| Image | Text | No | `"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "modalities": ["text"]` | content must be "" when query comes from image |
-| Video + text | Text | No | `"messages": [{"role": "user", "content": "..."}], "videos": ["path/or/url"], "modalities": ["text"]` | — |
-| Video + audio | Text | No | `"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text"]` | content must be "" when the query is spoken |
-| Video | Text | No | `"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "modalities": ["text"]` | content must be "" when query comes from video |
-| Text | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": "..."}], "modalities": ["text", "audio"]` | — |
-| Image + text | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": "..."}], "images": ["path/or/url"], "modalities": ["text", "audio"]` | — |
-| Audio | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": ""}], "audios": ["path/or/url"], "modalities": ["text", "audio"]` | content must be "" when the query is spoken |
-| Image + audio | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text", "audio"]` | content must be "" when the query is spoken |
-| Image | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "modalities": ["text", "audio"]` | content must be "" when query comes from image |
-| Video + text | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": "..."}], "videos": ["path/or/url"], "modalities": ["text", "audio"]` | — |
-| Video + audio | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text", "audio"]` | content must be "" when the query is spoken |
-| Video | Text + Audio | **Yes** | `"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "modalities": ["text", "audio"]` | content must be "" when query comes from video |
+| Text | Text | No | `{"messages": [{"role": "user", "content": "..."}], "modalities": ["text"]}` | — |
+| Image + text | Text | No | `{"messages": [{"role": "user", "content": "..."}], "images": ["path/or/url"], "modalities": ["text"]}` | — |
+| Audio | Text | No | `{"messages": [{"role": "user", "content": ""}], "audios": ["path/or/url"], "modalities": ["text"]}` | content must be "" when the query is spoken |
+| Image + audio | Text | No | `{"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text"]}` | content must be "" when the query is spoken |
+| Image | Text | No | `{"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "modalities": ["text"]}` | content must be "" when query comes from image |
+| Video + text | Text | No | `{"messages": [{"role": "user", "content": "..."}], "videos": ["path/or/url"], "modalities": ["text"]}` | — |
+| Video + audio | Text | No | `{"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text"]}` | content must be "" when the query is spoken |
+| Video | Text | No | `{"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "modalities": ["text"]}` | content must be "" when query comes from video |
+| Text | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": "..."}], "modalities": ["text", "audio"]}` | — |
+| Image + text | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": "..."}], "images": ["path/or/url"], "modalities": ["text", "audio"]}` | — |
+| Audio | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": ""}], "audios": ["path/or/url"], "modalities": ["text", "audio"]}` | content must be "" when the query is spoken |
+| Image + audio | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text", "audio"]}` | content must be "" when the query is spoken |
+| Image | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": ""}], "images": ["path/or/url"], "modalities": ["text", "audio"]}` | content must be "" when query comes from image |
+| Video + text | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": "..."}], "videos": ["path/or/url"], "modalities": ["text", "audio"]}` | — |
+| Video + audio | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "audios": ["path/or/url"], "modalities": ["text", "audio"]}` | content must be "" when the query is spoken |
+| Video | Text + Audio | **Yes** | `{"messages": [{"role": "user", "content": ""}], "videos": ["path/or/url"], "modalities": ["text", "audio"]}` | content must be "" when query comes from video |
 
 ### Sampling Parameters
 
@@ -78,21 +78,21 @@ Standard sampling parameters apply to the thinker stage. When `modalities` inclu
 
 | Parameter | Type | Default | Applies to |
 |---|---|---|---|
-| `temperature` | float | `null` | Thinker |
-| `top_p` | float | `null` | Thinker |
-| `top_k` | int | `null` | Thinker |
-| `min_p` | float | `null` | Thinker |
-| `repetition_penalty` | float | `null` | Thinker |
-| `max_tokens` | int | `null` | Thinker |
+| `temperature` | float | `0.0` | Thinker |
+| `top_p` | float | `1.0` | Thinker |
+| `top_k` | int | `-1` | Thinker |
+| `min_p` | float | `0.0` | Thinker |
+| `repetition_penalty` | float | `1.0` | Thinker |
+| `max_tokens` | int | `2048` | Thinker |
 | `stop` | str \| list | `null` | Thinker |
 | `seed` | int | `null` | Thinker |
 | `stream` | bool | `false` | Both |
 | `audio` | dict | `null` | Talker (speech output only) — format config, e.g. `{"voice": "default", "format": "wav"}` |
-| `talker_temperature` | float | `null` | Talker (audio output only) |
-| `talker_top_p` | float | `null` | Talker (audio output only) |
-| `talker_top_k` | int | `null` | Talker (audio output only) |
-| `talker_repetition_penalty` | float | `null` | Talker (audio output only) |
-| `talker_max_new_tokens` | int | `null` | Talker (audio output only) |
+| `talker_temperature` | float | `0.9` | Talker (audio output only) |
+| `talker_top_p` | float | `1.0` | Talker (audio output only) |
+| `talker_top_k` | int | `50` | Talker (audio output only) |
+| `talker_repetition_penalty` | float | `1.05` | Talker (audio output only) |
+| `talker_max_new_tokens` | int | `4096` | Talker (audio output only) |
 | `stage_sampling` | dict | `null` | Per-stage sampling override, e.g. `{"thinker": {"temperature": 0.8}}` |
 | `stage_params` | dict | `null` | Per-stage non-sampling params, e.g. `{"preprocessor": {"video_fps": 1.0}}` |
 | `video_fps` | float | `null` | Frame sampling rate for video input (uses server default if unset) |

@@ -5,7 +5,7 @@
 // Inspired by the DeepSeek-V4 interactive generator in sglang docs_new.
 //
 // Architecture: each dimension defines an independent contribute(ctx) function
-// returning { prefix?, flags?, config?, extraArgs? }. buildCommand() assembles them.
+// returning { prefix?, flags?, config?, modelPath?, extraArgs? }. buildCommand() assembles them.
 // extraArgs are appended without '--' prefix (dotted-path sglang-omni passthrough).
 // To add a new option: add one entry to the relevant dimension object.
 (function () {
@@ -30,6 +30,21 @@
     },
   };
 
+  // Hardware is a sub-dimension of colocated topology (BF16 only).
+  // Each entry maps to a YAML memory budget profile calibrated for that GPU.
+  var HARDWARE = {
+    'h20': {
+      label:       'H20',
+      subtitle:    '≥ 96 GB',
+      config_bf16: 'examples/configs/qwen3_omni_colocated_h20.yaml',
+    },
+    'h200': {
+      label:       'H200',
+      subtitle:    '≥ 141 GB',
+      config_bf16: 'examples/configs/qwen3_omni_colocated_h200.yaml',
+    },
+  };
+
   var TOPOLOGIES = {
     'disaggregated': {
       label:    'Disaggregated',
@@ -41,10 +56,10 @@
       label:    'Colocated',
       subtitle: 'single high-VRAM GPU',
       gpus:     function()    { return '1 GPU (H20 / H200)'; },
-      contribute: function()  {
+      contribute: function(ctx)  {
         return {
           flags:  ['--colocate'],
-          config: 'examples/configs/qwen3_omni_colocated_h20.yaml',
+          config: HARDWARE[ctx.hw].config_bf16,
         };
       },
     },
@@ -64,13 +79,14 @@
       subtitle: '3 GPUs',
       gpus:     function() { return '3 GPUs'; },
       contribute: function() {
-        return { flags: ['--thinker-tp-size 2', '--thinker-gpus 0,1', '--talker-gpu 2'] };
+        return { flags: ['--thinker-tp-size 2', '--thinker-gpus 0,1', '--talker-gpu 2', '--code2wav-gpu 2'] };
       },
     },
   };
 
   // Precision: BF16 is the default (no extra args).
-  // FP8 uses dotted-path passthrough args — no separate CLI flag exists.
+  // FP8 colocated uses a dedicated YAML (model + memory budgets pre-configured).
+  // FP8 disaggregated uses dotted-path passthrough args — no separate CLI flag exists.
   var PRECISIONS = {
     'bf16': {
       label:    'BF16',
@@ -81,8 +97,13 @@
       label:    'FP8',
       subtitle: '',
       contribute: function(ctx) {
-        var extra = ['runtime_overrides.thinker.server_args_overrides.quantization=fp8'];
-        return { extraArgs: extra };
+        if (ctx.mode === 'speech' && ctx.topo === 'colocated') {
+          return {
+            config:    'examples/configs/qwen3_omni_fp8_colocated.yaml',
+            modelPath: 'marksverdhei/Qwen3-Omni-30B-A3B-FP8',
+          };
+        }
+        return { extraArgs: ['runtime_overrides.thinker.server_args_overrides.quantization=fp8'] };
       },
     },
   };
@@ -96,14 +117,20 @@
     } else {
       if (ctx.topo === 'colocated') {
         items.push({ flag: '--colocate', desc: 'All GPU stages share a single high-VRAM GPU' });
-        items.push({ flag: '--config …colocated_h20.yaml', desc: 'Memory budget profile calibrated for H20 (≥ 96 GB); use colocated_h200.yaml on H200' });
+        if (ctx.prec === 'fp8') {
+          items.push({ flag: '--config …fp8_colocated.yaml', desc: 'FP8 memory budget profile; sets model path to marksverdhei/Qwen3-Omni-30B-A3B-FP8' });
+        } else {
+          var hwDef = HARDWARE[ctx.hw];
+          items.push({ flag: '--config …colocated_' + ctx.hw + '.yaml', desc: 'Memory budget profile calibrated for ' + hwDef.label + ' (' + hwDef.subtitle + ')' });
+        }
       } else if (ctx.tp === 'tp2') {
         items.push({ flag: '--thinker-tp-size 2', desc: 'Tensor-parallel the thinker across 2 GPUs' });
         items.push({ flag: '--thinker-gpus 0,1',  desc: 'Assign thinker TP ranks to GPU 0 and GPU 1' });
-        items.push({ flag: '--talker-gpu 2',       desc: 'Assign talker and code2wav to GPU 2' });
+        items.push({ flag: '--talker-gpu 2',       desc: 'Assign talker to GPU 2' });
+        items.push({ flag: '--code2wav-gpu 2',     desc: 'Assign code2wav to GPU 2' });
       }
     }
-    if (ctx.prec === 'fp8') {
+    if (ctx.prec === 'fp8' && !(ctx.mode === 'speech' && ctx.topo === 'colocated')) {
       var fp8Desc = 'FP8 precision for the thinker stage';
       if (ctx.mode === 'speech') {
         fp8Desc += '; talker remains in BF16';
@@ -122,8 +149,9 @@
   // All other combinations return null — GPU count badge already conveys
   // the key constraint; guessing GPU models would be misleading.
   function getHardware(ctx) {
-    if (ctx.topo === 'colocated' && ctx.prec === 'bf16') {
-      return 'H20 / H200 (≥ 96 GB)';
+    if (ctx.mode === 'speech' && ctx.topo === 'colocated') {
+      var hwDef = HARDWARE[ctx.hw];
+      return hwDef.label + ' (' + hwDef.subtitle + ')';
     }
     return null;
   }
@@ -141,10 +169,11 @@
 
     var prefix     = tc.prefix || mc.prefix || '';
     var flags      = (mc.flags || []).concat(tc.flags || []);
-    var configFile = tc.config || mc.config || null;
+    var configFile = pc.config || tc.config || mc.config || null;
+    var modelPath  = pc.modelPath || 'Qwen/Qwen3-Omni-30B-A3B-Instruct';
     var extraArgs  = pc.extraArgs || [];
 
-    var parts = ['--model-path Qwen/Qwen3-Omni-30B-A3B-Instruct'];
+    var parts = ['--model-path ' + modelPath];
     for (var i = 0; i < flags.length; i++) parts.push(flags[i]);
     if (configFile) parts.push('--config ' + configFile);
     parts.push('--port 8008');
@@ -177,7 +206,7 @@
 
   // ─── Renderer ─────────────────────────────────────────────────────────────
   function render(mountEl) {
-    var state = { mode: 'text-only', topo: 'disaggregated', prec: 'bf16', tp: 'tp1' };
+    var state = { mode: 'text-only', topo: 'disaggregated', prec: 'bf16', tp: 'tp1', hw: 'h20' };
     var dark  = detectDark();
 
     function update() {
@@ -266,6 +295,14 @@
         return { id: k, dim: 'prec', label: PRECISIONS[k].label, subtitle: PRECISIONS[k].subtitle };
       });
       html += makeRow('Precision', precItems, ctx.prec);
+
+      // ── Hardware row (colocated BF16 only — selects per-GPU memory budget YAML) ──
+      if (isSpeech && ctx.topo === 'colocated' && ctx.prec === 'bf16') {
+        var hwItems = Object.keys(HARDWARE).map(function(k) {
+          return { id: k, dim: 'hw', label: HARDWARE[k].label, subtitle: HARDWARE[k].subtitle };
+        });
+        html += makeRow('Hardware', hwItems, ctx.hw);
+      }
 
       // ── Info badges ──
       function badge(bg, fg, text) {
