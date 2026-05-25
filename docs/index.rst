@@ -23,7 +23,6 @@ Our core features include:
    :maxdepth: 1
    :caption: Cookbook
 
-   cookbook/qwen3_omni.md
    cookbook/higgs_tts.md
 
 
@@ -52,3 +51,4 @@ Our core features include:
    developer_reference/pipeline.md
    developer_reference/config.md
    developer_reference/communication.md
+   developer_reference/profiler.md

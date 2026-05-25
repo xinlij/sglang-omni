@@ -1,6 +1,6 @@
 # Higgs Audio v3 TTS
 
-[Higgs Audio v3 TTS](https://huggingface.co/boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999)
+[Higgs Audio v3 TTS](https://huggingface.co/boson-sglang/higgs-audio-v3-tts-4b-base)
 is a chat-native text-to-speech model from Boson AI built on a Qwen3-4B backbone. It generates
 24 kHz speech through 8 discrete codebooks and supports 100+ languages, voice cloning from a
 reference clip, and fine-grained inline control over emotion, style, sound effects, and prosody.
@@ -20,7 +20,7 @@ uv pip install -v .
 
 # Higgs TTS model is private; export your HF token before downloading.
 export HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-hf download boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999
+hf download boson-sglang/higgs-audio-v3-tts-4b-base
 hf download bosonai/higgs-audio-v2-tokenizer
 ```
 
@@ -31,7 +31,7 @@ pipeline loads the audio codec from the model checkpoint directory itself.
 
 ```bash
 sgl-omni serve \
-  --model-path boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999 \
+  --model-path boson-sglang/higgs-audio-v3-tts-4b-base \
   --config examples/configs/higgs_tts.yaml \
   --port 8000
 ```
@@ -40,7 +40,7 @@ To use a separate codec checkpoint:
 
 ```bash
 sgl-omni serve \
-  --model-path boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999 \
+  --model-path boson-sglang/higgs-audio-v3-tts-4b-base \
   --config examples/configs/higgs_tts.yaml \
   --stage-arg preprocessing.audio_codec_path=bosonai/higgs-audio-v2-tokenizer \
   --stage-arg vocoder.audio_codec_path=bosonai/higgs-audio-v2-tokenizer \
