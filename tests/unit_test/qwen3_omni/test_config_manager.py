@@ -86,10 +86,7 @@ def test_config_manager_dotted_runtime_overrides_creates_intermediate_dicts() ->
         ["runtime_overrides.thinker.server_args_overrides.quantization=fp8"]
     )
     merged = manager.merge_config(extra_args)
-    assert (
-        merged.runtime_overrides["thinker"]["server_args_overrides"]["quantization"]
-        == "fp8"
-    )
+    assert merged.runtime_overrides["thinker"]["server_args_overrides"]["quantization"] == "fp8"
 
 
 def test_config_manager_rejects_trailing_key_without_value() -> None:
