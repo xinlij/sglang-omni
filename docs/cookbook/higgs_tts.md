@@ -26,8 +26,7 @@ hf download bosonai/higgs-audio-v2-tokenizer
 
 ## Server Configuration
 
-The pipeline is `preprocessing → audio_encoder → tts_engine → vocoder`. By default the
-pipeline loads the audio codec from the model checkpoint directory itself.
+The pipeline is `preprocessing → audio_encoder → tts_engine → vocoder`.
 
 ```bash
 sgl-omni serve \
@@ -36,14 +35,14 @@ sgl-omni serve \
   --port 8000
 ```
 
-To use a separate codec checkpoint:
+The audio codec defaults to the public [`bosonai/higgs-audio-v2-tokenizer`](https://huggingface.co/bosonai/higgs-audio-v2-tokenizer) repo. Override per-stage if you need a different codec checkpoint:
 
 ```bash
 sgl-omni serve \
   --model-path boson-sglang/higgs-audio-v3-tts-4b-base \
   --config examples/configs/higgs_tts.yaml \
-  --stage-arg preprocessing.audio_codec_path=bosonai/higgs-audio-v2-tokenizer \
-  --stage-arg vocoder.audio_codec_path=bosonai/higgs-audio-v2-tokenizer \
+  --stage-arg preprocessing.audio_codec_path=<path-or-repo-id> \
+  --stage-arg vocoder.audio_codec_path=<path-or-repo-id> \
   --port 8000
 ```
 
