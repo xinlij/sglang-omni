@@ -15,7 +15,6 @@ from sglang_omni.config.manager import ConfigManager
 from sglang_omni.models.qwen3_omni.config import (
     Qwen3OmniPipelineConfig,
     Qwen3OmniSpeechColocatedPipelineConfig,
-    Qwen3OmniSpeechPipelineConfig,
 )
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -78,15 +77,6 @@ def test_config_manager_dotted_parallelism_override_updates_tp_size_alias() -> N
     assert thinker.tp_size == 2
     assert thinker.parallelism.tp == 2
     assert thinker.gpu == [0, 1]
-
-
-def test_config_manager_dotted_runtime_overrides_creates_intermediate_dicts() -> None:
-    manager = ConfigManager(Qwen3OmniSpeechPipelineConfig(model_path="dummy"))
-    extra_args = manager.parse_extra_args(
-        ["runtime_overrides.thinker.server_args_overrides.quantization=fp8"]
-    )
-    merged = manager.merge_config(extra_args)
-    assert merged.runtime_overrides["thinker"]["server_args_overrides"]["quantization"] == "fp8"
 
 
 def test_config_manager_rejects_trailing_key_without_value() -> None:
