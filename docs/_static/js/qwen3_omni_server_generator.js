@@ -85,8 +85,9 @@
   };
 
   // Precision: BF16 is the default (no extra args).
-  // FP8 colocated uses a dedicated YAML (model + memory budgets pre-configured).
-  // FP8 disaggregated uses dotted-path passthrough args — no separate CLI flag exists.
+  // FP8 always uses the native FP8 checkpoint — quantization is inferred automatically
+  // by the thinker/talker workers from the checkpoint config, so no server-side flag needed.
+  // Colocated FP8 additionally switches to a dedicated YAML for the memory budget.
   var PRECISIONS = {
     'bf16': {
       label:    'BF16',
@@ -103,7 +104,7 @@
             modelPath: 'marksverdhei/Qwen3-Omni-30B-A3B-FP8',
           };
         }
-        return { extraArgs: ['runtime_overrides.thinker.server_args_overrides.quantization=fp8'] };
+        return { modelPath: 'marksverdhei/Qwen3-Omni-30B-A3B-FP8' };
       },
     },
   };
@@ -131,11 +132,11 @@
       }
     }
     if (ctx.prec === 'fp8' && !(ctx.mode === 'speech' && ctx.topo === 'colocated')) {
-      var fp8Desc = 'FP8 precision for the thinker stage';
+      var fp8Desc = 'Native FP8 checkpoint; quantization inferred automatically by the thinker';
       if (ctx.mode === 'speech') {
-        fp8Desc += '; talker remains in BF16';
+        fp8Desc += ' (talker remains in BF16)';
       }
-      items.push({ flag: 'runtime_overrides.thinker…quantization=fp8', desc: fp8Desc });
+      items.push({ flag: '--model-path marksverdhei/…FP8', desc: fp8Desc });
     }
     if (items.length === 0) {
       items.push({ flag: '(no extra flags)', desc: 'Disaggregated speech pipeline with thinker on GPU 0 and talker on GPU 1 by default' });
