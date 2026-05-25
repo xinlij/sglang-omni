@@ -21,6 +21,14 @@ Our core features include:
 
 .. toctree::
    :maxdepth: 1
+   :caption: Cookbook
+
+   cookbook/qwen3_omni.md
+   cookbook/higgs_tts.md
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: Basic Usage
 
    basic_usage/qwen3_omni.md
@@ -44,4 +52,3 @@ Our core features include:
    developer_reference/pipeline.md
    developer_reference/config.md
    developer_reference/communication.md
-   developer_reference/profiler.md
