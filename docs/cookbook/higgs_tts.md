@@ -231,6 +231,21 @@ curl -X POST http://localhost:8000/v1/audio/speech \
 | `<\|prosody:expressive_high\|>` | More expressive delivery |
 | `<\|prosody:expressive_low\|>` | Flatter delivery |
 
+### Pre-encoded reference codes
+For high-throughput pipelines (e.g. RL rollout) where the same reference audio is reused across many requests, you can encode the reference audio offline and pass the discrete codes directly via `reference_codes` — this skips the server-side codec encode step. Shape must be `[T, num_codebooks=8]`.
+
+```python
+# python
+resp = requests.post(
+    "http://localhost:8000/v1/audio/speech",
+    json={
+        "input": SPEECH_INPUT,
+        "reference_codes": codes_TN,   # [T, 8] int list, pre-delay-pattern
+        "reference_text": REFERENCE_TEXT,
+    },
+)
+```
+
 ### Request parameters
 
 | Parameter | Type | Default | Description |
