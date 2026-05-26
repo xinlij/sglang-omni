@@ -116,7 +116,26 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
 
 ### Inline Control Tokens
 
-Embed control tokens directly in the `input` text.
+Embed control tokens directly in the `input` field. Tokens from different
+categories can be combined:
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "I cant believe it! <|emotion:surprise|> <|prosody:pause|> <|style:whispering|> Thats absolutely incredible."
+  }' \
+  --output output.wav
+```
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "<|emotion:enthusiasm|> Welcome to the show! <|prosody:pause|> <|prosody:speed_slow|> Today we have something truly special for you."
+  }' \
+  --output output.wav
+```
 
 #### Emotion
 
@@ -180,28 +199,6 @@ Embed control tokens directly in the `input` text.
 | `<\|prosody:long_pause\|>` | ~700–1500 ms pause |
 | `<\|prosody:expressive_high\|>` | More expressive delivery |
 | `<\|prosody:expressive_low\|>` | Flatter delivery |
-
-#### Examples
-
-Combine tokens from different categories in the `input` field:
-
-```bash
-curl -X POST http://localhost:8000/v1/audio/speech \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "I cant believe it! <|emotion:surprise|> <|prosody:pause|> <|style:whispering|> Thats absolutely incredible."
-  }' \
-  --output output.wav
-```
-
-```bash
-curl -X POST http://localhost:8000/v1/audio/speech \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "<|emotion:enthusiasm|> Welcome to the show! <|prosody:pause|> <|prosody:speed_slow|> Today we have something truly special for you."
-  }' \
-  --output output.wav
-```
 
 ## Benchmark Results
 
