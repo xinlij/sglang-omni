@@ -14,7 +14,7 @@ reference clip, and fine-grained inline control over emotion, style, sound effec
 
 ## Architecture
 
-![Higgs Audio v3 Generation Architecture](./assets/higgs-architecture.png)
+![Higgs Audio v3 Generation Architecture](../_static/image/higgs-architecture.png)
 
 Higgs autoregressive decoder consumes interleaved text and audio tokens. Audio is encoded by the **Higgs Tokenizer** into 8 codebooks at 25 fps, staggered via a **delay pattern**, then mapped to backbone hidden states through a **multi-codebook fused embedding**. Output codes pass through a **multi-codebook fused head**, are de-delayed, and decoded back to waveform. Multi-turn generation interleaves `<|text|>…<|audio|>…` chunks so each new chunk is grounded on reference + prior chunks.
 
