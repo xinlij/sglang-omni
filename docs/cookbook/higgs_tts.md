@@ -5,6 +5,26 @@ is a chat-native text-to-speech model from Boson AI built on a Qwen3-4B backbone
 24 kHz speech through 8 discrete codebooks and supports 100+ languages, voice cloning from a
 reference clip, and fine-grained inline control over emotion, style, sound effects, and prosody.
 
+## Highlights
+
+- **Chat-native, low-latency** streaming multi-turn speech generation
+- **Multilingual** — 100+ languages and dialects, 90+ with single-digit WER/CER
+- **Voice clone accuracy** — high-fidelity zero-shot speaker cloning from reference clips
+- **Inline control** via `<|emotion:…|>`, `<|style:…|>`, `<|sfx:…|>`, `<|prosody:…|>` tags
+
+## Architecture
+
+![Higgs Audio v3 Generation Architecture](./assets/higgs-architecture.png)
+
+Higgs autoregressive decoder consumes interleaved text and audio tokens. Audio is encoded by the **Higgs Tokenizer** into 8 codebooks at 25 fps, staggered via a **delay pattern**, then mapped to backbone hidden states through a **multi-codebook fused embedding**. Output codes pass through a **multi-codebook fused head**, are de-delayed, and decoded back to waveform. Multi-turn generation interleaves `<|text|>…<|audio|>…` chunks so each new chunk is grounded on reference + prior chunks.
+
+| Component | Spec |
+|---|---|
+| Backbone | ~4B autoregressive decoder (36 L, hidden=2560, GQA 32/8) |
+| Audio tokens | 8 codebooks × 1026 vocab, delay pattern |
+| Multi-codebook embedding / head | Fused single-tensor, tied with text embedding |
+| Context length | 8,192 tokens (training sequence length) |
+
 ## Prerequisites
 
 ```bash
@@ -118,6 +138,12 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
 
 Embed control tokens directly in the `input` field. Tokens from different
 categories can be combined:
+
+**Demo**
+
+<audio controls>
+  <source src="assets/test.wav" type="audio/wav">
+</audio>
 
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
