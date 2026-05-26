@@ -265,67 +265,52 @@ We report **WER / CER** (↓, %) and **WavLM speaker similarity** (↑, ×100) o
 
 ### Seed-TTS
 
-<table>
-<thead>
-<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
-</thead>
-<tbody>
-<tr><td>en</td><td>2.05</td><td>64.86</td></tr>
-<tr><td>zh</td><td>2.00</td><td>70.96</td></tr>
-<tr><td><b>macro</b></td><td><b>2.02</b></td><td><b>67.91</b></td></tr>
-</tbody>
-</table>
+| Lang | WER ↓ | SIM ↑ |
+|---|---|---|
+| en | 2.05 | 64.86 |
+| zh | 2.00 | 70.96 |
+| **macro** | **2.02** | **67.91** |
 
 ### CV3 (9 langs)
 
-<table>
-<thead>
-<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
-</thead>
-<tbody>
-<tr><td>de</td><td>8.62</td><td>65.43</td></tr>
-<tr><td>en</td><td>6.73</td><td>60.37</td></tr>
-<tr><td>es</td><td>5.03</td><td>68.18</td></tr>
-<tr><td>fr</td><td>14.50</td><td>62.34</td></tr>
-<tr><td>it</td><td>8.55</td><td>67.34</td></tr>
-<tr><td>ja</td><td>7.96</td><td>67.91</td></tr>
-<tr><td>ko</td><td>4.38</td><td>68.40</td></tr>
-<tr><td>ru</td><td>9.38</td><td>66.77</td></tr>
-<tr><td>zh</td><td>5.19</td><td>69.71</td></tr>
-<tr><td><b>macro</b></td><td><b>7.82</b></td><td><b>66.27</b></td></tr>
-</tbody>
-</table>
+| Lang | WER ↓ | SIM ↑ |
+|---|---|---|
+| de | 8.62 | 65.43 |
+| en | 6.73 | 60.37 |
+| es | 5.03 | 68.18 |
+| fr | 14.50 | 62.34 |
+| it | 8.55 | 67.34 |
+| ja | 7.96 | 67.91 |
+| ko | 4.38 | 68.40 |
+| ru | 9.38 | 66.77 |
+| zh | 5.19 | 69.71 |
+| **macro** | **7.82** | **66.27** |
 
 ### MiniMax-Multilingual (23 langs)
 
-<table>
-<thead>
-<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
-</thead>
-<tbody>
-<tr><td>ar</td><td>2.59</td><td>74.77</td></tr>
-<tr><td>cs</td><td>4.62</td><td>78.80</td></tr>
-<tr><td>de</td><td>0.74</td><td>70.65</td></tr>
-<tr><td>el</td><td>1.81</td><td>78.02</td></tr>
-<tr><td>en</td><td>1.87</td><td>81.32</td></tr>
-<tr><td>es</td><td>3.06</td><td>72.78</td></tr>
-<tr><td>fi</td><td>4.62</td><td>82.69</td></tr>
-<tr><td>fr</td><td>4.70</td><td>70.27</td></tr>
-<tr><td>hi</td><td>6.81</td><td>80.94</td></tr>
-<tr><td>id</td><td>2.38</td><td>72.42</td></tr>
-<tr><td>it</td><td>2.07</td><td>74.56</td></tr>
-<tr><td>ja</td><td>3.74</td><td>74.23</td></tr>
-<tr><td>ko</td><td>3.57</td><td>74.86</td></tr>
-<tr><td>nl</td><td>2.10</td><td>73.02</td></tr>
-<tr><td>pl</td><td>2.08</td><td>83.16</td></tr>
-<tr><td>pt</td><td>2.59</td><td>76.52</td></tr>
-<tr><td>ro</td><td>3.64</td><td>77.10</td></tr>
-<tr><td>ru</td><td>4.66</td><td>74.48</td></tr>
-<tr><td>th</td><td>7.59</td><td>77.64</td></tr>
-<tr><td>tr</td><td>2.09</td><td>77.72</td></tr>
-<tr><td>uk</td><td>2.69</td><td>71.79</td></tr>
-<tr><td>vi</td><td>1.18</td><td>73.46</td></tr>
-<tr><td>zh</td><td>1.65</td><td>74.85</td></tr>
-<tr><td><b>macro</b></td><td><b>3.17</b></td><td><b>75.92</b></td></tr>
-</tbody>
-</table>
+| Lang | WER ↓ | SIM ↑ |
+|---|---|---|
+| ar | 2.59 | 74.77 |
+| cs | 4.62 | 78.80 |
+| de | 0.74 | 70.65 |
+| el | 1.81 | 78.02 |
+| en | 1.87 | 81.32 |
+| es | 3.06 | 72.78 |
+| fi | 4.62 | 82.69 |
+| fr | 4.70 | 70.27 |
+| hi | 6.81 | 80.94 |
+| id | 2.38 | 72.42 |
+| it | 2.07 | 74.56 |
+| ja | 3.74 | 74.23 |
+| ko | 3.57 | 74.86 |
+| nl | 2.10 | 73.02 |
+| pl | 2.08 | 83.16 |
+| pt | 2.59 | 76.52 |
+| ro | 3.64 | 77.10 |
+| ru | 4.66 | 74.48 |
+| th | 7.59 | 77.64 |
+| tr | 2.09 | 77.72 |
+| uk | 2.69 | 71.79 |
+| vi | 1.18 | 73.46 |
+| zh | 1.65 | 74.85 |
+| **macro** | **3.17** | **75.92** |
