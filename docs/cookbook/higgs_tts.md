@@ -77,7 +77,7 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   --output output.wav
 ```
 <audio controls>
-  <source src="assets/higgs-1.wav" type="audio/wav">
+  <source src="../_static/audio/higgs-1.wav" type="audio/wav">
 </audio>
 
 ### Voice Cloning
@@ -153,7 +153,7 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   --output output.wav
 ```
 <audio controls>
-  <source src="assets/control-tokens-test1.wav" type="audio/wav">
+  <source src="../_static/audio/control-tokens-test1.wav" type="audio/wav">
 </audio>
 
 ```bash
@@ -165,7 +165,7 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   --output output.wav
 ```
 <audio controls>
-  <source src="assets/control-tokens-test2.wav" type="audio/wav">
+  <source src="../_static/audio/control-tokens-test2.wav" type="audio/wav">
 </audio>
 
 #### Emotion
