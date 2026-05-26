@@ -76,6 +76,9 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   -d '{"input": "Hello, how are you?"}' \
   --output output.wav
 ```
+<audio controls>
+  <source src="assets/higgs-1.wav" type="audio/wav">
+</audio>
 
 ### Voice Cloning
 
@@ -141,10 +144,6 @@ categories can be combined:
 
 **Demo**
 
-<audio controls>
-  <source src="assets/test.wav" type="audio/wav">
-</audio>
-
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
@@ -153,6 +152,9 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   }' \
   --output output.wav
 ```
+<audio controls>
+  <source src="assets/control-tokens-test1.wav" type="audio/wav">
+</audio>
 
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
@@ -162,6 +164,9 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   }' \
   --output output.wav
 ```
+<audio controls>
+  <source src="assets/control-tokens-test2.wav" type="audio/wav">
+</audio>
 
 #### Emotion
 
