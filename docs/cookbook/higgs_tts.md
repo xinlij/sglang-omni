@@ -70,12 +70,31 @@ sgl-omni serve \
 
 ### Zero-shot
 
+1. Use curl
+
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{"input": "Hello, how are you?"}' \
   --output output.wav
 ```
+
+2. Use Python
+
+```python
+import requests
+
+resp = requests.post(
+    "http://localhost:8000/v1/audio/speech",
+    json={"input": "Hello, how are you?"},
+)
+resp.raise_for_status()
+with open("output.wav", "wb") as f:
+    f.write(resp.content)
+```
+
+Reference output:
+
 <audio controls>
   <source src="../_static/audio/higgs-1.wav" type="audio/wav">
 </audio>
@@ -84,11 +103,13 @@ curl -X POST http://localhost:8000/v1/audio/speech \
 
 Supplying the reference transcript (`text`) materially improves cloning quality.
 
+1. Use curl
+
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
-    "input": "Get the trust fund to the bank early.",
+    "input": "Have a nice day and enjoy south california sunshine.",
     "references": [{
       "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
       "text": "We asked over twenty different people, and they all said it was his."
@@ -100,14 +121,15 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   --output output.wav
 ```
 
+2. Use Python
+
 ```python
-# Python
 import requests
 
 resp = requests.post(
     "http://localhost:8000/v1/audio/speech",
     json={
-        "input": "Get the trust fund to the bank early.",
+        "input": "Have a nice day and enjoy south california sunshine.",
         "references": [{
             "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
             "text": "We asked over twenty different people, and they all said it was his.",
@@ -122,13 +144,19 @@ with open("output.wav", "wb") as f:
     f.write(resp.content)
 ```
 
+Reference output:
+
+<audio controls>
+  <source src="../_static/audio/higgs-2.wav" type="audio/wav">
+</audio>
+
 ### Streaming
 
 ```bash
 curl -N -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
-    "input": "Get the trust fund to the bank early.",
+    "input": "Have a nice day and enjoy sunshine of the bay area.",
     "references": [{
       "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
       "text": "We asked over twenty different people, and they all said it was his."
@@ -136,6 +164,8 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
     "stream": true
   }'
 ```
+
+
 
 ### Inline Control Tokens
 
@@ -266,6 +296,8 @@ resp = requests.post(
 
 ### Throughput
 
+[TODO (yichi, Huapeng): This should be updated in the last minute.]
+
 Throughput on seed-tts en (N=50 per concurrency, sequential thread pool, A100 40GB, bf16):
 
 | Concurrency | Mean latency | RTF (per-req) | audio_s/s |
@@ -329,3 +361,4 @@ We report **WER / CER** (↓, %) and **WavLM speaker similarity** (↑, ×100) o
 | vi | 1.18 | 73.46 |
 | zh | 1.65 | 74.85 |
 | **macro** | **3.17** | **75.92** |
+# autobuild probe
