@@ -27,6 +27,62 @@ weights or split a single request across workers. It selects one routable worker
 for each request, forwards the original request bytes, and returns the worker
 response with router diagnostic headers.
 
+## Quick Start
+
+The fastest path to a working router deployment is `--launcher-config`: one
+command starts the worker subprocesses, waits for all of them to pass
+`/health`, and then opens the router for client traffic.
+
+```bash
+sgl-omni-router \
+  --host 0.0.0.0 \
+  --port 8008 \
+  --launcher-config examples/configs/qwen3_omni_router.yaml \
+  --policy round_robin
+```
+
+`examples/configs/qwen3_omni_router.yaml` ships with the repo and launches two
+colocated Qwen3-Omni workers on GPUs 0 and 1:
+
+```yaml
+launcher:
+  backend: local
+  model_path: Qwen/Qwen3-Omni-30B-A3B-Instruct
+  model_name: qwen3-omni
+  num_workers: 2
+  num_gpus_per_worker: 1
+  worker_host: 127.0.0.1
+  worker_base_port: 8011
+  worker_extra_args: "--config examples/configs/qwen3_omni_colocated_h20.yaml --colocate"
+  wait_timeout: 600
+```
+
+Once the router is ready, send your first request:
+
+```bash
+curl http://127.0.0.1:8008/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen3-omni",
+    "messages": [{"role": "user", "content": "Say hello briefly."}],
+    "modalities": ["text"],
+    "max_tokens": 16
+  }'
+```
+
+## When to Use Each Launch Mode
+
+| Mode | How | Best for |
+|---|---|---|
+| `--launcher-config` | Router manages worker subprocesses on the same machine | Local multi-GPU deployments; simplest setup |
+| `--worker-urls` | Workers started separately; router pointed at their URLs | Multi-node or heterogeneous deployments; workers managed externally |
+| `--worker-config` | JSON file with per-worker model and capability metadata | Mixed-model or mixed-capability pools |
+
+Use `--launcher-config` for most single-machine deployments. Use `--worker-urls`
+when workers run on different hosts or are managed by an external orchestrator.
+Use `--worker-config` when different workers serve different models or expose
+only a subset of the Omni API.
+
 ## Launch Workers and Router From YAML
 
 For a local homogeneous pool, `sgl-omni-router` can start the worker replicas
@@ -415,3 +471,78 @@ point with:
 ```bash
 python -m sglang_omni_router.serve --help
 ```
+
+## Troubleshooting
+
+### Worker ports are already in use
+
+```
+RuntimeError: worker ports are already in use: 8011, 8012
+```
+
+The launcher checks all worker ports before starting any subprocess. Another
+process is already bound to one or more of those ports. Change
+`worker_base_port` in the launcher config to a free range, or stop the
+conflicting process first.
+
+### Managed worker exited before becoming healthy
+
+```
+RuntimeError: managed worker http://127.0.0.1:8011 exited before becoming healthy (exit_code=1)
+```
+
+The worker subprocess started but crashed during model loading. Check the
+worker's stderr output for the actual error. Common causes:
+
+- Wrong `model_path` or missing HF token for a gated checkpoint.
+- `--config` file references a yaml that does not exist or has a wrong field.
+- Out-of-memory during checkpoint loading — reduce `num_workers` or verify
+  per-stage memory fractions in the colocated yaml.
+- `--colocate` passed without `--config`, or the config does not instantiate
+  `Qwen3OmniSpeechColocatedPipelineConfig`.
+
+### Managed worker did not become healthy before timeout
+
+```
+TimeoutError: managed worker http://127.0.0.1:8011 did not become healthy: status=503
+```
+
+The worker is still alive but `/health` has not returned 200 within
+`wait_timeout` seconds (default 600). Large checkpoints on slow disks or
+networks may need a longer timeout. Increase `wait_timeout` in the launcher
+config:
+
+```yaml
+launcher:
+  wait_timeout: 1200
+```
+
+### Not enough CUDA devices
+
+```
+RuntimeError: not enough CUDA devices for managed workers: required=4, available=2
+```
+
+The launcher computes `num_workers × num_gpus_per_worker` and checks it
+against visible CUDA devices. Either reduce `num_workers`, reduce
+`num_gpus_per_worker`, or export a larger `CUDA_VISIBLE_DEVICES` before
+starting the router. To assign GPUs explicitly instead of relying on
+auto-detection, use `worker_gpu_ids`:
+
+```yaml
+launcher:
+  num_workers: 2
+  worker_gpu_ids: ["0", "1"]
+```
+
+### Router returns 503 immediately after startup
+
+`GET /ready` returns 503 when no worker is routable. If the router starts
+before workers finish loading, `/ready` will return 503 until at least one
+worker passes health checks. With `--launcher-config` the router waits for all
+workers before accepting traffic; with `--worker-urls` the router starts
+immediately and workers enter the routable pool as they pass health checks.
+
+Check `GET /workers` to see each worker's `health_state` and
+`consecutive_failures`. A worker stays in `unknown` state until it passes
+`--health-success-threshold` consecutive health checks.
