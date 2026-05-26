@@ -77,6 +77,8 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   --output output.wav
 ```
 
+#### Python
+
 ```python
 import requests
 
@@ -180,17 +182,26 @@ Embed control tokens directly in the `input` text.
 | `<\|prosody:expressive_high\|>` | More expressive delivery |
 | `<\|prosody:expressive_low\|>` | Flatter delivery |
 
-```python
-resp = requests.post(
-    "http://localhost:8000/v1/audio/speech",
-    json={
-        "input": (
-            "I can't believe it! <|emotion:surprise|> "
-            "<|prosody:pause|> "
-            "<|style:whispering|> That's absolutely incredible."
-        )
-    },
-)
+#### Examples
+
+Combine tokens from different categories in the `input` field:
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "I cant believe it! <|emotion:surprise|> <|prosody:pause|> <|style:whispering|> Thats absolutely incredible."
+  }' \
+  --output output.wav
+```
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "<|emotion:enthusiasm|> Welcome to the show! <|prosody:pause|> <|prosody:speed_slow|> Today we have something truly special for you."
+  }' \
+  --output output.wav
 ```
 
 ## Benchmark Results
