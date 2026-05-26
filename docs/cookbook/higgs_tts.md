@@ -231,21 +231,101 @@ curl -X POST http://localhost:8000/v1/audio/speech \
 | `<\|prosody:expressive_high\|>` | More expressive delivery |
 | `<\|prosody:expressive_low\|>` | Flatter delivery |
 
-## Benchmark Results
+### Request parameters
 
-Macro WER/CER (↓) and WavLM speaker similarity (↑, ×100):
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `input` | string | (required) | Text to synthesize |
+| `voice` | string | `"default"` | Voice identifier (ignored when `references` is set) |
+| `response_format` | string | `"wav"` | Output audio format |
+| `stream` | bool | `false` | Enable streaming via SSE |
+| `references` | list | `null` | Reference audio for voice cloning; each item has `audio_path` (local path or HTTP URL) and `text` (transcript) |
+| `reference_codes` | list[list[int]] | `null` | Pre-encoded discrete codes, shape `[T, 8]` — alternative to `references[0].audio_path` |
+| `reference_text` | string | `null` | Transcript of reference audio when supplying `reference_codes` |
+| `max_new_tokens` | int | `2048` | Maximum number of generated multi-codebook steps |
+| `temperature` | float | `1.0` | Sampling temperature |
+| `top_p` | float | `null` | Top-p sampling |
+| `top_k` | int | `null` | Top-k sampling |
+| `seed` | int | `null` | Random seed for reproducibility |
 
-| Benchmark | Higgs v3 WER ↓ | Higgs v3 SIM ↑ | Higgs v2 WER ↓ | Higgs v2 SIM ↑ | Fish S2 Pro WER ↓ | Fish S2 Pro SIM ↑ | Qwen3-TTS-1.7B WER ↓ | Qwen3-TTS-1.7B SIM ↑ | VibeVoice-7B WER ↓ | VibeVoice-7B SIM ↑ |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Seed-TTS (en+zh) | **1.31** | 70.47 | 2.41 | 70.38 | 1.43 | 68.19 | 1.57 | 74.33 | 3.92 | 65.55 |
-| CV3 (9 langs) | **4.67** | 69.77 | 21.28 | 65.39 | 4.63 | 67.28 | 7.80 | 72.45 | 11.74 | 65.96 |
-| MiniMax-Multilingual (23 langs) | **1.88** | 78.56 | 43.72 | 70.34 | 4.17 | 74.74 | 27.85 | 77.34 | 7.20 | 73.95 |
-| Higgs-Multilingual (100+ langs) | **5.20** | 75.49 | 55.62 | 63.03 | 13.33 | 71.88 | 97.80 | 73.13 | 20.81 | 71.85 |
 
-## Known Limitations
+### Throughput
 
-- **Transcript improves cloning quality.** Omitting `text` in `references` degrades speaker similarity, especially for short clips.
-- **Rare-word mispronunciation.** The model may mispronounce uncommon words or proper nouns.
-- **Prosody drift on long generations.** Expressive control may weaken over long utterances.
-- **Control token stacking.** Using many control tokens simultaneously can produce unexpected delivery.
-- **Unsupported languages.** Performance outside the 95+ single-digit WER/CER languages is usable but less polished.
+Throughput on seed-tts en (N=50 per concurrency, sequential thread pool, A100 40GB, bf16):
+
+| Concurrency | Mean latency | RTF (per-req) | audio_s/s |
+|---:|---:|---:|---:|
+| 1 | 4637 ms | 0.526 | 1.90 |
+| 16 | 7138 ms | 0.747 | 12.88 |
+| 32 | 10188 ms | 0.865 | 16.94 |
+
+## Evaluation Benchmarks
+
+We report **WER / CER** (↓, %) and **WavLM speaker similarity** (↑, ×100) on three zero-shot voice-cloning benchmarks.
+
+### Seed-TTS
+
+<table>
+<thead>
+<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
+</thead>
+<tbody>
+<tr><td>en</td><td>2.05</td><td>64.86</td></tr>
+<tr><td>zh</td><td>2.00</td><td>70.96</td></tr>
+<tr><td><b>macro</b></td><td><b>2.02</b></td><td><b>67.91</b></td></tr>
+</tbody>
+</table>
+
+### CV3 (9 langs)
+
+<table>
+<thead>
+<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
+</thead>
+<tbody>
+<tr><td>de</td><td>8.62</td><td>65.43</td></tr>
+<tr><td>en</td><td>6.73</td><td>60.37</td></tr>
+<tr><td>es</td><td>5.03</td><td>68.18</td></tr>
+<tr><td>fr</td><td>14.50</td><td>62.34</td></tr>
+<tr><td>it</td><td>8.55</td><td>67.34</td></tr>
+<tr><td>ja</td><td>7.96</td><td>67.91</td></tr>
+<tr><td>ko</td><td>4.38</td><td>68.40</td></tr>
+<tr><td>ru</td><td>9.38</td><td>66.77</td></tr>
+<tr><td>zh</td><td>5.19</td><td>69.71</td></tr>
+<tr><td><b>macro</b></td><td><b>7.82</b></td><td><b>66.27</b></td></tr>
+</tbody>
+</table>
+
+### MiniMax-Multilingual (23 langs)
+
+<table>
+<thead>
+<tr><th>Lang</th><th>WER ↓</th><th>SIM ↑</th></tr>
+</thead>
+<tbody>
+<tr><td>ar</td><td>2.59</td><td>74.77</td></tr>
+<tr><td>cs</td><td>4.62</td><td>78.80</td></tr>
+<tr><td>de</td><td>0.74</td><td>70.65</td></tr>
+<tr><td>el</td><td>1.81</td><td>78.02</td></tr>
+<tr><td>en</td><td>1.87</td><td>81.32</td></tr>
+<tr><td>es</td><td>3.06</td><td>72.78</td></tr>
+<tr><td>fi</td><td>4.62</td><td>82.69</td></tr>
+<tr><td>fr</td><td>4.70</td><td>70.27</td></tr>
+<tr><td>hi</td><td>6.81</td><td>80.94</td></tr>
+<tr><td>id</td><td>2.38</td><td>72.42</td></tr>
+<tr><td>it</td><td>2.07</td><td>74.56</td></tr>
+<tr><td>ja</td><td>3.74</td><td>74.23</td></tr>
+<tr><td>ko</td><td>3.57</td><td>74.86</td></tr>
+<tr><td>nl</td><td>2.10</td><td>73.02</td></tr>
+<tr><td>pl</td><td>2.08</td><td>83.16</td></tr>
+<tr><td>pt</td><td>2.59</td><td>76.52</td></tr>
+<tr><td>ro</td><td>3.64</td><td>77.10</td></tr>
+<tr><td>ru</td><td>4.66</td><td>74.48</td></tr>
+<tr><td>th</td><td>7.59</td><td>77.64</td></tr>
+<tr><td>tr</td><td>2.09</td><td>77.72</td></tr>
+<tr><td>uk</td><td>2.69</td><td>71.79</td></tr>
+<tr><td>vi</td><td>1.18</td><td>73.46</td></tr>
+<tr><td>zh</td><td>1.65</td><td>74.85</td></tr>
+<tr><td><b>macro</b></td><td><b>3.17</b></td><td><b>75.92</b></td></tr>
+</tbody>
+</table>
