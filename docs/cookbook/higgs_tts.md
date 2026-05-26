@@ -40,7 +40,7 @@ uv pip install -v .
 
 # Higgs TTS model is private; export your HF token before downloading.
 export HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-hf download boson-sglang/higgs-audio-v3-tts-4b-base
+hf download boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999
 hf download bosonai/higgs-audio-v2-tokenizer
 ```
 
@@ -50,7 +50,7 @@ The pipeline is `preprocessing → audio_encoder → tts_engine → vocoder`.
 
 ```bash
 sgl-omni serve \
-  --model-path boson-sglang/higgs-audio-v3-tts-4b-base \
+  --model-path boson-sglang/higgs-audio-v3-TTS-4B-grpo05200410999 \
   --config examples/configs/higgs_tts.yaml \
   --port 8000
 ```
