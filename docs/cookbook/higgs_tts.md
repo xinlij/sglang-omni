@@ -55,17 +55,6 @@ sgl-omni serve \
   --port 8000
 ```
 
-The audio codec defaults to the public [`bosonai/higgs-audio-v2-tokenizer`](https://huggingface.co/bosonai/higgs-audio-v2-tokenizer) repo. Override per-stage if you need a different codec checkpoint:
-
-```bash
-sgl-omni serve \
-  --model-path boson-sglang/higgs-audio-v3-tts-4b-base \
-  --config examples/configs/higgs_tts.yaml \
-  --stage-arg preprocessing.audio_codec_path=<path-or-repo-id> \
-  --stage-arg vocoder.audio_codec_path=<path-or-repo-id> \
-  --port 8000
-```
-
 ## Synthesizing Speech
 
 ### Zero-shot
@@ -143,6 +132,11 @@ resp.raise_for_status()
 with open("output.wav", "wb") as f:
     f.write(resp.content)
 ```
+Reference input:
+
+<audio controls>
+  <source src="../_static/audio/higgs-3.wav" type="audio/wav">
+</audio>
 
 Reference output:
 
@@ -152,11 +146,19 @@ Reference output:
 
 ### Streaming
 
+Unlike a standard request where you wait for the full audio to be generated before receiving anything, streaming lets you start receiving and playing audio **while generation is still in progress**. This significantly reduces time-to-first-audio, which matters for real-time or interactive use cases.
+
+Higgs TTS implements streaming via [Server-Sent Events (SSE)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events). Each SSE event carries a base64-encoded WAV chunk. Your client can decode and play each chunk as it arrives, rather than buffering the entire response.
+
+1. Use curl
+
+Set `"stream": true` in your request body:
+
 ```bash
 curl -N -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
-    "input": "Have a nice day and enjoy sunshine of the bay area.",
+    "input": "Get the trust fund to the bank early.",
     "references": [{
       "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
       "text": "We asked over twenty different people, and they all said it was his."
@@ -164,6 +166,65 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
     "stream": true
   }'
 ```
+The `-N` flag disables curl's output buffering so SSE events are printed as they arrive.
+
+2. Use Python
+
+This example decodes each chunk and writes it to a WAV file incrementally. In a real application, you would pipe the decoded bytes directly to an audio player (e.g., via `pyaudio` or `sounddevice`).
+
+```python
+import requests
+import base64
+import json
+
+REFERENCE_AUDIO = "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav"
+REFERENCE_TEXT = "We asked over twenty different people, and they all said it was his."
+SPEECH_INPUT = "Get the trust fund to the bank early."
+
+with requests.post(
+    "http://localhost:8000/v1/audio/speech",
+    json={
+        "input": SPEECH_INPUT,
+        "references": [{"audio_path": REFERENCE_AUDIO, "text": REFERENCE_TEXT}],
+        "stream": True,
+    },
+    stream=True,
+) as resp:
+    resp.raise_for_status()
+    with open("output_streaming.wav", "wb") as f:
+        for line in resp.iter_lines():
+            if not line or line == b"data: [DONE]":
+                continue
+            if not line.startswith(b"data: "):
+                continue
+
+            event = json.loads(line[len(b"data: "):])
+
+            if event.get("finish_reason") == "stop":
+                break
+
+            audio_data = event.get("audio") or {}
+            if audio_data.get("data"):
+                chunk = base64.b64decode(audio_data["data"])
+                f.write(chunk)
+                # In a real app: feed `chunk` to your audio player here
+```
+
+Reference output:
+
+<audio controls>
+  <source src="../_static/audio/higgs-4.wav" type="audio/wav">
+</audio>
+
+
+#### What the SSE response looks like
+Each event follows the standard SSE format:
+```
+data: {"id": "speech-...", "object": "audio.speech.chunk", "index": 0, "audio": {"data": "<base64-encoded WAV bytes>", "format": "wav", ...}, "finish_reason": null}
+data: {"id": "speech-...", "object": "audio.speech.chunk", "index": 1, "audio": null, "finish_reason": "stop", "usage": {...}}
+data: [DONE]
+```
+Audio chunks have `"finish_reason": null` and carry audio data in `audio.data`. The final metadata event has `"finish_reason": "stop"` and `"audio": null`, followed by a `[DONE]` sentinel.
 
 
 
@@ -182,6 +243,8 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   }' \
   --output output.wav
 ```
+Reference output:
+
 <audio controls>
   <source src="../_static/audio/control-tokens-test1.wav" type="audio/wav">
 </audio>
@@ -194,6 +257,8 @@ curl -X POST http://localhost:8000/v1/audio/speech \
   }' \
   --output output.wav
 ```
+Reference output:
+
 <audio controls>
   <source src="../_static/audio/control-tokens-test2.wav" type="audio/wav">
 </audio>
@@ -361,4 +426,3 @@ We report **WER / CER** (↓, %) and **WavLM speaker similarity** (↑, ×100) o
 | vi | 1.18 | 73.46 |
 | zh | 1.65 | 74.85 |
 | **macro** | **3.17** | **75.92** |
-# autobuild probe
