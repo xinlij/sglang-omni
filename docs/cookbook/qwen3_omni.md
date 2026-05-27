@@ -73,7 +73,7 @@ Standard sampling parameters apply to the thinker stage. When `modalities` inclu
 
 | Parameter | Type | Default | Applies to |
 |---|---|---|---|
-| `temperature` | float | `0.0` | Thinker |
+| `temperature` | float | `1.0` | Thinker |
 | `top_p` | float | `1.0` | Thinker |
 | `top_k` | int | `-1` | Thinker |
 | `min_p` | float | `0.0` | Thinker |
@@ -88,8 +88,8 @@ Standard sampling parameters apply to the thinker stage. When `modalities` inclu
 | `talker_top_k` | int | `50` | Talker (audio output only) |
 | `talker_repetition_penalty` | float | `1.05` | Talker (audio output only) |
 | `talker_max_new_tokens` | int | `4096` | Talker (audio output only) |
-| `stage_sampling` | dict | `null` | Per-stage sampling override, e.g. `{"thinker": {"temperature": 0.8}}` |
-| `stage_params` | dict | `null` | Per-stage non-sampling params, e.g. `{"preprocessor": {"video_fps": 1.0}}` |
+| `stage_sampling` | dict | `null` | Per-stage sampling override |
+| `stage_params` | dict | `null` | Per-stage non-sampling params |
 | `video_fps` | float | `null` | Frame sampling rate for video input (uses server default if unset) |
 | `video_max_frames` | int | `null` | Maximum number of frames sampled from a video |
 | `video_min_pixels` | int | `null` | Minimum pixels per video frame |

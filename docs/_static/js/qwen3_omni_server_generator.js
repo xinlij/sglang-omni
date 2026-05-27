@@ -132,10 +132,7 @@
       }
     }
     if (ctx.prec === 'fp8' && !(ctx.mode === 'speech' && ctx.topo === 'colocated')) {
-      var fp8Desc = 'Native FP8 checkpoint; quantization inferred automatically by the thinker';
-      if (ctx.mode === 'speech') {
-        fp8Desc += ' (talker remains in BF16)';
-      }
+      var fp8Desc = 'Native FP8 checkpoint; quantization inferred automatically for both thinker and talker AR stages';
       items.push({ flag: '--model-path marksverdhei/…FP8', desc: fp8Desc });
     }
     if (items.length === 0) {
