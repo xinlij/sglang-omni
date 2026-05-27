@@ -2,7 +2,9 @@
 
 This guide uses [Qwen3-Omni](https://huggingface.co/Qwen/Qwen3-Omni-30B-A3B-Instruct) as an example omni model with SGLang-Omni and the OpenAI-compatible API. Qwen3-Omni supports multi-modal input (text, image, audio) and can produce text-only or text + audio output depending on the mode.
 
-For server launch commands and configuration options, see the [Qwen3-Omni Cookbook](../cookbook/qwen3_omni.md).
+## Prerequisites
+
+Install `sglang-omni` by following [Installation](../get_started/installation.md).
 
 ## Text-Only Mode
 
