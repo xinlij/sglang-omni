@@ -235,19 +235,24 @@ categories can be combined:
 
 **Demo**
 
+1. Emotion: surprise
+
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
-    "input": "I cant believe it! <|emotion:surprise|> <|prosody:pause|> <|style:whispering|> Thats absolutely incredible."
+    "input": "I cant believe it! <|emotion:surprise|> <|prosody:pause|> <|style:whispering|> Higgs Model and SGLang are absolutely incredible."
   }' \
   --output output.wav
 ```
+
 Reference output:
 
 <audio controls>
   <source src="../_static/audio/control-tokens-test1.wav" type="audio/wav">
 </audio>
+
+2. Prosody: speed_slow
 
 ```bash
 curl -X POST http://localhost:8000/v1/audio/speech \
@@ -261,6 +266,86 @@ Reference output:
 
 <audio controls>
   <source src="../_static/audio/control-tokens-test2.wav" type="audio/wav">
+</audio>
+
+3. Combine them together:
+
+Here is an example of combining emotion, prosody and style tokens together:
+
+<details>
+<summary>Commands</summary>
+
+Part 1 — female asks:
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "<|prosody:pitch_high|> <|prosody:speed_slow|> Excuse me. Can you tell me how much the shirt is?",
+    "references": [{
+      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_103675.wav",
+      "text": "Excuse me. Can you tell me how much the shirt is?"
+    }],
+    "temperature": 0.5,
+    "top_k": 30,
+    "seed": 404
+  }' \
+  --output part1.wav
+```
+
+Part 2 — male answers:
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "<|prosody:speed_very_slow|> <|prosody:expressive_low|> Yes, it is nine fifteen.",
+    "references": [{
+      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
+      "text": "We asked over twenty different people, and they all said it was his."
+    }],
+    "temperature": 0.5,
+    "top_k": 30,
+    "seed": 43
+  }' \
+  --output part2.wav
+```
+
+Part 3 — female reads the question:
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "<|prosody:speed_slow|> <|prosody:expressive_low|> Question: How much is the shirt?",
+    "references": [{
+      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_103675.wav",
+      "text": "We asked over twenty different people, and they all said it was his."
+    }],
+    "temperature": 0.5,
+    "top_k": 30,
+    "seed": 44
+  }' \
+  --output part3.wav
+```
+
+Concatenate (~0.6 s gap between lines):
+
+```bash
+ffmpeg -y \
+  -i part1.wav -f lavfi -t 0.6 -i anullsrc=r=24000:cl=mono \
+  -i part2.wav -f lavfi -t 0.6 -i anullsrc=r=24000:cl=mono \
+  -i part3.wav \
+  -filter_complex "[0:a][1:a][2:a][3:a][4:a]concat=n=5:v=0:a=1" \
+  gaokao_listening.wav
+```
+
+</details>
+
+Reference output:
+
+<audio controls>
+  <source src="../_static/audio/gaokao-listening.wav" type="audio/wav">
 </audio>
 
 #### Emotion
